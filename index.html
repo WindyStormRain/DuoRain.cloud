@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DuoRain</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Poppins:wght@600;800&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  :root {
+    --bg1: #2e3192;
+    --bg2: #fcb045;
+    --bg3: #00d2ff;
+    --accent1: #005bea;
+    --accent2: #002e8a;
+    --glass: rgba(255, 255, 255, 0.08);
+    --glass-strong: rgba(255, 255, 255, 0.14);
+    --muted: rgba(255, 255, 255, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.06);
+  }
+
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    font-family: "Inter", "Poppins", system-ui, -apple-system, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(-45deg, var(--bg1), var(--bg2), var(--bg3), var(--bg1));
+    background-size: 400% 400%;
+    animation: gradientShift 22s linear infinite;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    color: #fff;
+    min-height: 100vh;
+    padding: 36px 18px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    position: relative;
+  }
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Container shell */
+  .shell {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    position: relative;
+  }
+
+  /* Logo row */
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 8px;
+    pointer-events: none;
+    user-select: none;
+  }
+  .logo-image {
+    width: 118px;
+    height: 118px;
+    flex: 0 0 118px;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.35));
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+    padding: 12px;
+    box-sizing: border-box;
+  }
+  .title {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* tighter gap */
+}
+.duo {
+  font-family: "Poppins", sans-serif;
+  font-size: 88px; /* match Rain */
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #fff;
+  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.rain {
+  font-family: "Poppins", sans-serif;
+  font-size: 88px; /* same size as Duo */
+  font-weight: 800;
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+  transform: translateY(-2px);
+}
+  /* Farm Status Button - top left */
+
+  /* Screens container */
+  .screen {
+    width: 100%;
+    max-width: 720px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    position: relative;
+    padding: 8px 16px;
+    box-sizing: border-box;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  .screen.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    position: relative;
+  }
+
+  /* Farm buttons container - no big box, just flex wrap */
+  #farmButtonsGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  /* Farm buttons translucent glass */
+  .farm-button {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 18px 28px;
+    min-width: 160px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-family: "Poppins", sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.4px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    user-select: none;
+    transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.2, 1),
+      box-shadow 0.2s, background 0.2s;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
+  }
+  .farm-button img {
+    width: 26px;
+    height: 26px;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
+  }
+  .farm-button:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .farm-button.selected {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45);
+    background: linear-gradient(
+      90deg,
+      rgba(28, 176, 246, 0.12),
+      rgba(0, 94, 200, 0.08)
+    );
+    border: 1px solid rgba(28, 176, 246, 0.25);
+  }
+
+  /* Input Screen Panel */
+#inputPanel {
+  background: var(--glass);
+  border-radius: 18px;
+  padding: 28px 32px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(10px);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-self: center;
+  align-items: center; 
+  gap: 24px;
+  width: 100%;
+  max-width: 520px; /* slightly wider so content fits */
+  min-height: 200px; 
+  box-sizing: border-box; /* ensure padding is inside total size */
+}
+
+/* Input wrap */
+.input-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 420px; /* fits comfortably inside the panel */
+  margin: 0 auto; /* centers the whole input horizontally */
+}
+
+.input-wrap input {
+  width: 100%;
+  padding: 14px 14px 14px 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  outline: none;
+  font-weight: 700;
+  font-size: 16px;
+  transition: box-shadow 0.18s, transform 0.12s;
+  box-sizing: border-box; /* avoid padding overflow */
+}
+
+.input-wrap input::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 600;
+}
+
+.input-wrap input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(28, 176, 246, 0.4); /* subtle glow */
+  border-color: rgba(28, 176, 246, 0.85);
+  transform: translateY(-2px);
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  opacity: 0.98;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
+}
+  
+  /* Start Button */
+  #startBtn {
+    padding: 14px 24px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(90deg, #1cb0f6, #006edc);
+    color: white;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: transform 0.14s, box-shadow 0.18s, opacity 0.12s;
+  }
+  #startBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  #startBtn:hover:not(:disabled) {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(0, 110, 220, 0.28);
+  }
+
+  /* Progress area - initially hidden */
+  .progress-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    max-height: 0;
+    transition: opacity 0.4s ease, max-height 0.4s ease;
+  }
+  .progress-area.visible {
+    opacity: 1;
+    pointer-events: auto;
+    max-height: 140px; /* enough for the content */
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    color: var(--muted);
+    font-size: 15px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .progress-meta .label {
+    font-size: 17px;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+  }
+  .progress-meta .sub {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 600;
+  }
+  .progress-bar {
+    position: relative;
+    height: 22px;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+  }
+  .progress-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 110, 220, 0.85),
+      rgba(28, 176, 246, 0.9)
+    );
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.24) inset;
+    transition: width 420ms cubic-bezier(0.2, 0.9, 0.2, 1), box-shadow 0.2s;
+  }
+  .progress-fill .stripes {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.06) 0px,
+      rgba(255, 255, 255, 0.02) 8px,
+      transparent 16px
+    );
+    animation: stripeMove 3s linear infinite;
+    opacity: 0.45;
+  }
+  @keyframes stripeMove {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-32px);
+    }
+  }
+  .progress-pulse {
+    animation: pulse 420ms ease;
+  }
+  @keyframes pulse {
+    0% {
+      transform: scaleX(1);
+    }
+    50% {
+      transform: scaleX(1.02);
+    }
+    100% {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Back Button on input screen */
+  #backBtnInput {
+    align-self: flex-start;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 10px 18px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.3));
+    transition: background 0.25s ease;
+  }
+  #backBtnInput:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .logo-image {
+      width: 92px;
+      height: 92px;
+    }
+    .duo {
+      font-size: 48px;
+    }
+    .rain {
+      font-size: 56px;
+    }
+    #farmButtonsGroup {
+      flex-direction: column;
+      gap: 16px;
+    }
+    .input-wrap {
+      width: 100%;
+      max-width: 300px;
+    }
+  }
+
+/* === Added centering for input panel under back button === */
+#inputScreen {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+}
+
+#backBtnInput {
+  justify-self: start;
+  margin-bottom: 20px;
+}
+
+#inputPanel {
+  justify-self: center;
+}
+
+</style>
+</head>
+<body>
+  <div class="shell" role="main" aria-label="DuoRain automated farming tool">
+
+    <!-- Logo Row -->
+    <div class="logo-row" aria-hidden="true">
+      <img
+        class="logo-image"
+        src="assets/rain-thunder-cloud.png"
+        alt="cloud"
+        draggable="false"
+      />
+      <div class="title">
+        <div class="duo">Duo</div>
+        <div class="rain">Rain</div>
+      </div>
+      <img
+        class="logo-image"
+        src="assets/rain-thunder-cloud.png"
+        alt="cloud"
+        draggable="false"
+      />
+    </div>
+
+    <!-- Farm Menu Screen -->
+    <section
+      id="farmMenuScreen"
+      class="screen visible"
+      aria-label="Farming actions"
+      role="region"
+    >
+      <div id="farmButtonsGroup" role="tablist" aria-label="Farming actions">
+        <button
+          class="farm-button"
+          data-mode="xp"
+          id="xpBtn"
+          aria-pressed="false"
+          role="tab"
+          aria-controls="inputScreen"
+        >
+          <img src="assets/xp.svg" alt="" aria-hidden="true" />
+          XP Farm
+        </button>
+        <button
+          class="farm-button"
+          data-mode="gem"
+          id="gemBtn"
+          aria-pressed="false"
+          role="tab"
+          aria-controls="inputScreen"
+        >
+          <img src="assets/gems.svg" alt="" aria-hidden="true" />
+          Gem Farm
+        </button>
+        <button
+          class="farm-button"
+          data-mode="streak"
+          id="streakBtn"
+          aria-pressed="false"
+          role="tab"
+          aria-controls="inputScreen"
+        >
+          <img src="assets/streak.svg" alt="" aria-hidden="true" />
+          Streak Farm
+        </button>
+      </div>
+    </section>
+
+    <!-- Input Screen -->
+    <section
+      id="inputScreen"
+      class="screen hidden"
+      aria-label="Farm input and progress"
+      role="region"
+    >
+      <button id="backBtnInput" aria-label="Back to farm menu">← Back</button>
+
+      <div id="inputPanel">
+        <div class="input-wrap">
+          <img class="input-icon" src="" alt="" id="inputIcon" aria-hidden="true" />
+          <input
+            type="text"
+            id="farmInput"
+            autocomplete="off"
+            placeholder=""
+            aria-label="Farm input"
+          />
+        </div>
+        <button id="startBtn" disabled>Start Farming</button>
+
+        <div class="progress-area" aria-live="polite" aria-atomic="true" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-meta">
+            <div class="label" id="progressLabel">Progress</div>
+            <div class="sub" id="progressPercent">0%</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill">
+              <div class="stripes"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const farmButtons = document.querySelectorAll(".farm-button");
+      const farmMenuScreen = document.getElementById("farmMenuScreen");
+      const inputScreen = document.getElementById("inputScreen");
+      const backBtn = document.getElementById("backBtnInput");
+      const farmInput = document.getElementById("farmInput");
+      const startBtn = document.getElementById("startBtn");
+      const inputIcon = document.getElementById("inputIcon");
+      const progressFill = document.getElementById("progressFill");
+      const progressPercent = document.getElementById("progressPercent");
+      const progressLabel = document.getElementById("progressLabel");
+      const progressArea = inputScreen.querySelector(".progress-area");
+
+      let currentFarmMode = null;
+      let farmingRunning = false;
+      let progressValue = 0;
+      let progressInterval = null;
+
+      // Whether we've connected the QWebChannel backend signals
+      let backendConnected = false;
+
+      // Icons map for input screen
+      const iconMap = {
+        xp: "assets/xp.svg",
+        gem: "assets/gems.svg",
+        streak: "assets/streak.svg",
+      };
+
+      // Input placeholder map
+      const placeholderMap = {
+        xp: "Enter Number Of Loops",
+        gem: "Enter Number Of Loops",
+        streak: "Enter Number Of Streak",
+      };
+
+      // Reset progress bar
+      function resetProgress() {
+        progressValue = 0;
+        progressFill.style.width = "0%";
+        progressFill.classList.remove("progress-pulse");
+        progressPercent.textContent = "0%";
+        progressLabel.textContent = "Progress";
+        progressArea.classList.remove("visible");
+        if (progressInterval) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+      }
+
+      // Simulate farming progress for demo (fallback when no backend)
+      function startFarmingSimulated() {
+        if (farmingRunning) return;
+        farmingRunning = true;
+        startBtn.disabled = true;
+        farmInput.disabled = true;
+
+        progressLabel.textContent = "Farming in progress...";
+        progressFill.classList.add("progress-pulse");
+        progressArea.classList.add("visible");
+
+        // simple simulated progression
+        progressInterval = setInterval(() => {
+          if (progressValue >= 100) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+            farmingRunning = false;
+            startBtn.disabled = false;
+            farmInput.disabled = false;
+            progressLabel.textContent = "Farming complete!";
+            progressFill.classList.remove("progress-pulse");
+            return;
+          }
+          progressValue += Math.floor(Math.random() * 5) + 2; // increment by 2-6
+          if (progressValue > 100) progressValue = 100;
+          progressFill.style.width = progressValue + "%";
+          progressPercent.textContent = progressValue + "%";
+        }, 450);
+      }
+
+      // Called when backend emits progress via QWebChannel
+      function onBackendProgress(current, total, rate) {
+        // guard division by zero
+        const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+        progressValue = pct;
+        progressFill.style.width = pct + "%";
+        progressPercent.textContent = pct + "%";
+        progressLabel.textContent = `${current}/${total}`;
+
+        // when done
+        if (current >= total) {
+          farmingRunning = false;
+          startBtn.disabled = false;
+          farmInput.disabled = false;
+          progressFill.classList.remove("progress-pulse");
+          progressLabel.textContent = "Farming complete!";
+        } else {
+          // ensure the visible state is set
+          progressArea.classList.add("visible");
+        }
+      }
+
+      // Setup bindings for a discovered backend object
+      function setupBackendBindings() {
+        if (!window.backend) return;
+        backendConnected = true;
+        try {
+          if (window.backend.updateProgress && typeof window.backend.updateProgress.connect === "function") {
+            window.backend.updateProgress.connect(function (current, total, rate) {
+              // When signals come from Python land, update the UI
+              onBackendProgress(current, total, rate);
+            });
+          }
+        } catch (e) {
+          console.warn("Failed to connect backend.updateProgress:", e);
+        }
+      }
+
+      // Try loading qwebchannel when running inside Qt (the qt object exists)
+      if (typeof qt !== "undefined") {
+        // If QWebChannel isn't already present, inject the qwebchannel script from the Qt resource path.
+        if (typeof QWebChannel === "undefined") {
+          const s = document.createElement("script");
+          s.src = "qrc:///qtwebchannel/qwebchannel.js";
+          s.onload = function () {
+            try {
+              new QWebChannel(qt.webChannelTransport, function (channel) {
+                window.backend = channel.objects.backend;
+                setupBackendBindings();
+              });
+            } catch (e) {
+              console.warn("QWebChannel init failed:", e);
+            }
+          };
+          s.onerror = function () {
+            console.warn("Could not load qwebchannel.js from qrc.");
+          };
+          document.head.appendChild(s);
+        } else {
+          // QWebChannel already present
+          try {
+            new QWebChannel(qt.webChannelTransport, function (channel) {
+              window.backend = channel.objects.backend;
+              setupBackendBindings();
+            });
+          } catch (e) {
+            console.warn("QWebChannel init failed:", e);
+          }
+        }
+      } else {
+        // Not running in Qt: no backend available — that's fine, simulation will be used.
+        console.log("Not running inside PySide6 WebEngine (no Qt 'qt' object). Using simulated mode.");
+      }
+
+      // Event: farm button click on main menu
+      farmButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const mode = btn.dataset.mode;
+          if (!mode) return;
+
+          // Update aria-pressed on farm buttons
+          farmButtons.forEach((b) => b.setAttribute("aria-pressed", "false"));
+          btn.setAttribute("aria-pressed", "true");
+
+          // Set current mode
+          currentFarmMode = mode;
+
+          // Set input screen icon and placeholder
+          inputIcon.src = iconMap[mode];
+          farmInput.placeholder = placeholderMap[mode];
+          farmInput.value = "";
+          startBtn.disabled = true;
+          resetProgress();
+
+          // Animate screens
+          farmMenuScreen.classList.remove("visible");
+          farmMenuScreen.classList.add("hidden");
+          setTimeout(() => {
+            inputScreen.classList.remove("hidden");
+            inputScreen.classList.add("visible");
+            farmInput.focus();
+          }, 350);
+        });
+      });
+
+      // Back button click
+      backBtn.addEventListener("click", () => {
+        // Reset farm buttons selection
+        farmButtons.forEach((b) => b.setAttribute("aria-pressed", "false"));
+
+        // Stop farming if running
+        if (farmingRunning) {
+          if (window.backend && backendConnected && typeof window.backend.stop === "function") {
+            try {
+              window.backend.stop();
+            } catch (e) {
+              console.warn("backend.stop() failed:", e);
+            }
+          } else {
+            if (progressInterval) {
+              clearInterval(progressInterval);
+              progressInterval = null;
+            }
+            farmingRunning = false;
+          }
+        }
+
+        resetProgress();
+        farmInput.value = "";
+        startBtn.disabled = true;
+
+        inputScreen.classList.remove("visible");
+        inputScreen.classList.add("hidden");
+        setTimeout(() => {
+          farmMenuScreen.classList.remove("hidden");
+          farmMenuScreen.classList.add("visible");
+        }, 350);
+      });
+
+      // Enable start button only if input has value
+      farmInput.addEventListener("input", () => {
+        startBtn.disabled = farmInput.value.trim() === "";
+      });
+
+      // Start farming button click
+      startBtn.addEventListener("click", () => {
+        if (farmingRunning) return;
+        
+        const raw = farmInput.value.trim();
+        const count = parseInt(raw, 10);
+        if (!raw || isNaN(count) || count <= 0) return;
+
+        // If a Qt backend is connected, call it; otherwise use the simulated start
+        if (window.backend && typeof window.backend.start === "function" && backendConnected) {
+          try {
+            // mark UI as running — updates will come from backend.updateProgress
+            farmingRunning = true;
+            startBtn.disabled = true;
+            farmInput.disabled = true;
+            progressLabel.textContent = "Farming in progress...";
+            progressFill.classList.add("progress-pulse");
+            progressArea.classList.add("visible");
+
+            // call Python backend
+            window.backend.start(currentFarmMode, count);
+          } catch (e) {
+            console.warn("Calling backend.start failed, falling back to simulated:", e);
+            startFarmingSimulated();
+          }
+        } else {
+          // no backend available — run simulated
+          startFarmingSimulated();
+        }
+      });
+
+      
+      
+    })();
+  </script>
+</body>
+</html>
